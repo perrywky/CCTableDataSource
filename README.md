@@ -6,6 +6,8 @@
 * 每个Cell的高度不一致
 * 多种类型的SectionHeaderFooter同样适用
 
+这样可以避免在cellForRow等方法中写一大堆if else，便于代码的扩展和重用。
+
 #### 简单开始
 
 	CCTableDataSource *ds = [[CCTableDataSource alloc] initWithTableView:tableView];
