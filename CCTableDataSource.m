@@ -98,7 +98,7 @@
     if (identifier) {
         component.componentIdentifier = identifier;
     }
-    component.CCSelectCellBlock = selectedBlock;
+    component.selectCellBlock = selectedBlock;
     return component;
 }
 
@@ -143,8 +143,6 @@
 @property (nonatomic, strong) CCTableComponent *tableHeader;
 @property (nonatomic, strong) CCTableComponent *tableFooter;
 @property (nonatomic, strong) NSMutableArray *sections;
-
-@property (nonatomic, weak) id<UITableViewDelegate> tableViewDelegate;
 
 @end
 
@@ -207,6 +205,13 @@
     return self.sections.count - 1;
 }
 
+-(void)insertSectionAtIndex:(NSUInteger)index
+{
+    TableSection *section = [TableSection new];
+    section.cells = [NSMutableArray new];
+    [self.sections insertObject:section atIndex:index];
+}
+
 -(void)setHeader:(CCTableComponent *)component ofSection:(NSUInteger)section
 {
     NSAssert(section < self.sections.count, @"section exists");
@@ -248,6 +253,15 @@
     [self addCell:component toSection:section];
 }
 
+-(void)insertCell:(CCTableComponent *)component toIndex:(NSUInteger)index ofSection:(NSUInteger)section
+{
+    NSAssert(section < self.sections.count, @"section exists");
+    NSAssert(index <= [[self.sections[section] cells] count], @"index out of bound");
+    TableSection *tableSection = self.sections[section];
+    [tableSection.cells insertObject:component atIndex:index];
+    [self.tableView registerClass:component.componentClass forCellReuseIdentifier:component.componentIdentifier];
+}
+
 -(void)removeCellAtIndexPath:(NSIndexPath *)indexPath
 {
     NSAssert(indexPath.section < self.sections.count, @"section exists");
@@ -261,6 +275,12 @@
     NSAssert(section < self.sections.count, @"section exists");
     TableSection *tableSection = self.sections[section];
     [tableSection.cells removeLastObject];
+}
+
+-(void)removeSection:(NSUInteger)section
+{
+    NSAssert(section < self.sections.count, @"section exists");
+    [self.sections removeObjectAtIndex:section];
 }
 
 -(id)dataAtIndexPath:(NSIndexPath *)indexPath
@@ -424,9 +444,9 @@
 {
     TableSection *tableSection = self.sections[indexPath.section];
     CCTableComponent *component = tableSection.cells[indexPath.row];
-    if (component.CCSelectCellBlock) {
+    if (component.selectCellBlock) {
         UITableViewCell<CCTableComponentDelegate> *cell = (UITableViewCell<CCTableComponentDelegate> *)[tableView cellForRowAtIndexPath:indexPath];
-        component.CCSelectCellBlock(indexPath, cell, component);
+        component.selectCellBlock(indexPath, cell, component);
     }
     if ([self.tableViewDelegate respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)]) {
         [self.tableViewDelegate tableView:tableView didSelectRowAtIndexPath:indexPath];
@@ -437,6 +457,22 @@
 {
     if ([self.tableViewDelegate respondsToSelector:@selector(scrollViewDidScroll:)]) {
         [self.tableViewDelegate scrollViewDidScroll:scrollView];
+    }
+}
+
+-(void)scrollViewDidScrollToTop:(UIScrollView *)scrollView
+{
+    if ([self.tableViewDelegate respondsToSelector:@selector(scrollViewDidScrollToTop:)]) {
+        [self.tableViewDelegate scrollViewDidScrollToTop:scrollView];
+    }
+}
+
+-(BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView
+{
+    if ([self.tableViewDelegate respondsToSelector:@selector(scrollViewShouldScrollToTop:)]) {
+        return [self.tableViewDelegate scrollViewShouldScrollToTop:scrollView];
+    } else {
+        return YES;
     }
 }
 

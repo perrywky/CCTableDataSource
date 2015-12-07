@@ -1,4 +1,4 @@
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 @protocol CCTableComponentDelegate<NSObject>
 
@@ -26,7 +26,7 @@ typedef void(^CCHeaderFooterConfigureBlock)(UITableViewHeaderFooterView *view);
 @property (nonatomic, strong) Class<CCTableComponentDelegate> componentClass;
 @property (nonatomic, strong) id data;
 @property (nonatomic, strong) NSString *componentIdentifier;
-@property (nonatomic, strong) CCSelectCellBlock CCSelectCellBlock;
+@property (nonatomic, strong) CCSelectCellBlock selectCellBlock;
 
 +(CCTableComponent *)componentWithClass:(Class<CCTableComponentDelegate>)class data:(id)data;
 +(CCTableComponent *)componentWithClass:(Class<CCTableComponentDelegate>)class data:(id)data identifier:(NSString *)identifier;
@@ -41,20 +41,25 @@ typedef void(^CCHeaderFooterConfigureBlock)(UITableViewHeaderFooterView *view);
 
 @interface CCTableDataSource : NSObject<UITableViewDataSource, UITableViewDelegate>
 
+@property (nonatomic, weak) id<UITableViewDelegate> tableViewDelegate;
+
 -(id)initWithTableView:(UITableView *)tableview;
 -(id)initWithTableView:(UITableView *)tableview delegate:(id<UITableViewDelegate>)delegate;
 
 -(void)setTableHeader:(CCTableComponent *)component;
 -(void)setTableFooter:(CCTableComponent *)component;
 -(NSUInteger)addSection;
+-(void)insertSectionAtIndex:(NSUInteger)index;
 -(void)setHeader:(CCTableComponent *)component ofSection:(NSUInteger)section;
 -(void)setFooter:(CCTableComponent *)component ofSection:(NSUInteger)section;
 -(void)addCell:(CCTableComponent *)component toSection:(NSUInteger)section;
 -(void)addCellWithCellConfigure:(CCCellConfigureBlock)block toSection:(NSUInteger)section; //use tableview's default rowHeight
 -(void)addCellWithCellConfigure:(CCCellConfigureBlock)block andHeight:(CGFloat)height toSection:(NSUInteger)section;
+-(void)insertCell:(CCTableComponent *)component toIndex:(NSUInteger)index ofSection:(NSUInteger)section;
 
 -(void)removeCellAtIndexPath:(NSIndexPath *)indexPath;
 -(void)removeLastCellOfSection:(NSUInteger)section;
+-(void)removeSection:(NSUInteger)section;
 
 -(id)dataAtIndexPath:(NSIndexPath *)indexPath;
 -(void)updateData:(id)data atIndexPath:(NSIndexPath *)indexPath;
